@@ -19,7 +19,7 @@
     <SuppressCellErrors>False</SuppressCellErrors>
     <MaxRows>1000</MaxRows>
     <ExtensionProject>Yes</ExtensionProject>
-    <Name>K50</Name>
+    <Name>K50BI</Name>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>false</DebugSymbols>
@@ -37,37 +37,37 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="K50.pq">
+    <Compile Include="K50BI.pq">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="K5016.png">
+    <Compile Include="K50BI16.png">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="K5020.png">
+    <Compile Include="K50BI20.png">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="K5024.png">
+    <Compile Include="K50BI24.png">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="K5032.png">
+    <Compile Include="K50BI32.png">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="K5040.png">
+    <Compile Include="K50BI40.png">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="K5048.png">
+    <Compile Include="K50BI48.png">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="K5064.png">
+    <Compile Include="K50BI64.png">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="K5080.png">
+    <Compile Include="K50BI80.png">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="resources.resx">
       <SubType>Code</SubType>
     </Compile>
-    <Content Include="K50.query.pq">
+    <Content Include="K50BI.query.pq">
       <SubType>Code</SubType>
     </Content>
   </ItemGroup>

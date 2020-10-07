@@ -1,8 +1,8 @@
 ﻿// This file contains your Data Connector logic
-section K50;
+section K50BI;
 
-[DataSource.Kind="K50", Publish="K50.Publish"]
-shared K50.BI = Value.ReplaceType(K50.Data, FuncType);
+[DataSource.Kind="K50BI", Publish="K50BI.Publish"]
+shared K50BI.Stat = Value.ReplaceType(K50BI.Data, FuncType);
 
 FuncType = type function (
      num  as (type text meta [
@@ -22,7 +22,7 @@ FuncType = type function (
     ])
     )
     as table meta [
-        Documentation.Name = "K50.BI Function",
+        Documentation.Name = "K50BI Function",
         Documentation.LongDescription = "Created to get data from K50.BI service",
         Documentation.Examples = {
         [
@@ -38,19 +38,47 @@ FuncType = type function (
         }
     ];
 
+K50BI.Data = ( num as text,   start as text,  end as text)=>
+    let
+        join =  Table.Join(dateTable(dateFunc(start),dateFunc(end),0),"month0",dateTable(dateFunc(start),dateFunc(end),1),"month1", JoinKind.FullOuter),
+        addData = Table.AddColumn(join, "data", each K50BI.Get(num,[text0],[text1])),
+        delete = Table.RemoveColumns(addData,{"text0", "month1", "text1"}),
+        rename = Table.RenameColumns(delete,{{"month0", "month"}}),
+        expAnd = Table.ExpandTableColumn(rename, "data", {"json"}, {"json"})
+    in expAnd
+     ;
 
 
-K50.Data = 
+
+K50BI.Get = 
 ( num as text,   start as text,  end as text)=>
 let
-get = [#"from"=date_func(start), #"to"=date_func(end), #"apiKey"= Extension.CurrentCredential()[Key]],  
+get = [#"from"=dateFunc(start), #"to"=dateFunc(end), #"apiKey"= Extension.CurrentCredential()[Key]],  
 web1 = web_func(get,num),
-web2=retry_func(web1, get, num, 10),
-web3=retry_func(web2, get, num, 20),
-web4=retry_func(web3, get, num, 30),
-web5=retry_func(web4, get, num, 40),
-web6=retry_func(web5, get, num, 50),
-web=retry_func(web6, get, num, 60),
+web2=retry_func(web1, get, num, 5),
+web3=retry_func(web2, get, num, 7),
+web4=retry_func(web3, get, num, 9),
+web5=retry_func(web4, get, num, 10),
+web6=retry_func(web5, get, num, 10),
+web7=retry_func(web6, get, num, 10),
+web8=retry_func(web7, get, num, 10),
+web9=retry_func(web8, get, num, 10),
+web10=retry_func(web9, get, num, 10),
+web11=retry_func(web10, get, num, 10),
+web12=retry_func(web11, get, num, 10),
+web13=retry_func(web12, get, num, 10),
+web14=retry_func(web13, get, num, 10),
+web15=retry_func(web14, get, num, 10),
+web16=retry_func(web15, get, num, 10),
+web17=retry_func(web16, get, num, 10),
+web18=retry_func(web17, get, num, 10),
+web19=retry_func(web18, get, num, 10),
+web20=retry_func(web19, get, num, 10),
+web21=retry_func(web20, get, num, 10),
+web22=retry_func(web21, get, num, 10),
+web23=retry_func(web22, get, num, 10),
+web=retry_func(web23, get, num, 10),
+
 
 total = try web[total] otherwise null,
 error_message = try web[message] otherwise null,
@@ -84,7 +112,7 @@ web_func= (get,num)=>
        Json.Document(Web.Contents("https://bi.k50.ru/", [Query = get, RelativePath= "api/table/" & num  & "/getData", ManualStatusHandling = {404, 400,500,401,402,403,501,502,503,504,505}]));
    
 
-date_func= (dat)=>
+dateFunc= (dat)=>
        if dat = "yesterday" then Date.ToText(Date.AddDays(Date.From(DateTime.LocalNow()) , -1),"yyyy-MM-dd") 
        else if dat = "today" then Date.ToText(Date.From(DateTime.LocalNow()),"yyyy-MM-dd")
        else if (try Number.From(Text.BeforeDelimiter(dat,"daysAgo")) otherwise 0) >0 then Date.ToText(Date.AddDays(Date.From(DateTime.LocalNow()),-1*Number.From(Text.BeforeDelimiter(dat,"daysAgo"))),"yyyy-MM-dd") 
@@ -98,10 +126,26 @@ retry_func=(web, get, num, sec)=>
     in new;
 
 
+dateTable = (date1, date2, order)=>
+let
+    listDates= List.Dates(Date.From(date1), Number.From(Date.From(date2)-Date.From(date1))+1, #duration(1,0,0,0) ),
+    tableDates = Table.FromList(listDates, Splitter.SplitByNothing(), null, null, ExtraValues.Error),
+    typeDates = Table.TransformColumnTypes(tableDates, {{"Column1", type date}}),
+    sortDates = Table.Sort(typeDates,{{"Column1", order}}),
+    monthAdd = Table.AddColumn(sortDates , "month"& Text.From(order), each Date.ToText([Column1],"yyyy-MM")),
+    monthType = Table.TransformColumnTypes(monthAdd,{{"month"& Text.From(order), type text}}),
+    removeDuplicates = Table.Distinct(monthType , {"month"& Text.From(order)}),
+    textAdd = Table.AddColumn(removeDuplicates, "text"& Text.From(order), each (Date.ToText([Column1],"yyyy-MM-dd") )),
+    renameDate = Table.RenameColumns(textAdd,{{"Column1", "date"&Text.From(order)}}),
+    removeDate = Table.RemoveColumns(renameDate,{"date"& Text.From(order)}),
+    textType = Table.TransformColumnTypes(removeDate,{{"text"& Text.From(order), type text}})
+in textType;
+
+
 
 // Data Source Kind description
-K50 = [
-    TestConnection = (dataSourcePath) => { "K50.BI", Json.Document(dataSourcePath)[num],Json.Document(dataSourcePath)[start],Json.Document(dataSourcePath)[end]},
+K50BI = [
+    TestConnection = (dataSourcePath) => { "K50BI.Stat", Json.Document(dataSourcePath)[num],Json.Document(dataSourcePath)[start],Json.Document(dataSourcePath)[end]},
     Authentication = [
         
          Key = []
@@ -112,16 +156,16 @@ K50 = [
 
 
 // Data Source UI publishing description
-K50.Publish = [
+K50BI.Publish = [
     Beta = false,
     Category = "Other",
-    ButtonText = { "K50 Connector", "K50 Help" },
+    ButtonText = { "K50BI Connector", "K50BI Help" },
     LearnMoreUrl = "https://www.youtube.com/channel/UCqSLNYLN_3mf6nA1Xf7fu1g/",
-    SourceImage = K50.Icons,
-    SourceTypeImage = K50.Icons
+    SourceImage = K50BI.Icons,
+    SourceTypeImage = K50BI.Icons
 ];
 
-K50.Icons = [
-    Icon16 = { Extension.Contents("K5016.png"), Extension.Contents("K5020.png"), Extension.Contents("K5024.png"), Extension.Contents("K5032.png") },
-    Icon32 = { Extension.Contents("K5032.png"), Extension.Contents("K5040.png"), Extension.Contents("K5048.png"), Extension.Contents("K5064.png") }
+K50BI.Icons = [
+    Icon16 = { Extension.Contents("K50BI16.png"), Extension.Contents("K50BI20.png"), Extension.Contents("K50BI24.png"), Extension.Contents("K50BI32.png") },
+    Icon32 = { Extension.Contents("K50BI32.png"), Extension.Contents("K50BI40.png"), Extension.Contents("K50BI48.png"), Extension.Contents("K50BI64.png") }
 ];
